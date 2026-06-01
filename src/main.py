@@ -25,10 +25,6 @@ def copy_src_dest(src="static", dest="public", top_level=False):
             copy_src_dest(full_path, os.path.join(dest, list_item))
         print("done...\n")
 
-    # if len(items) == 0:
-    #     print("no items found, will create empty dir")
-    #     os.mkdir(dest)
-
 
 def main():
     copy_src_dest(top_level=True)
