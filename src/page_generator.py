@@ -22,7 +22,8 @@ def copy_src_dest(src="static", dest="public", top_level=False):
         elif os.path.isdir(full_path):
             print(f"found directory: {full_path}")
             copy_src_dest(full_path, os.path.join(dest, list_item))
-        print("done...\n")
+
+    print("done...\n")
 
 
 def extract_title(markdown: str):
@@ -68,4 +69,19 @@ def generate_page(from_path, template_path, dest_path):
         raise e
 
 
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    if not os.path.exists(dest_dir_path):
+        print(f"Creating directory: {dest_dir_path}")
+        os.mkdir(dest_dir_path)
 
+    items = os.listdir(dir_path_content)
+    for li in items:
+        fp = os.path.join(dir_path_content, li)
+        if os.path.isfile(fp) and fp.endswith(".md"):
+            print(f"Found .md content file: {fp}")
+            generate_page(fp, template_path, os.path.join(dest_dir_path, li.replace(".md", ".html")))
+        elif os.path.isdir(fp):
+            print(f"Found directory: {fp}")
+            generate_pages_recursive(fp, template_path, os.path.join(dest_dir_path, li))
+
+    print("done...\n")
