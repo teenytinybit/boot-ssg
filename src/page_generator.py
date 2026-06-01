@@ -4,7 +4,7 @@ import shutil
 from markdown_blocks import markdown_to_html_node
 
 
-def copy_src_dest(src="static", dest="public", top_level=False):
+def copy_src_dest(src, dest, top_level=False):
     if top_level and os.path.exists(dest) and os.path.isdir(dest):
         print(f"removing directory: {dest}")
         shutil.rmtree(dest)
@@ -34,7 +34,7 @@ def extract_title(markdown: str):
     raise ValueError("No h1 header found")
 
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, base_path):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
 
     try:
@@ -51,6 +51,10 @@ def generate_page(from_path, template_path, dest_path):
         title = extract_title(markdown)
         template = template.replace("{{ Title }}", title)
         template = template.replace("{{ Content }}", html_str)
+
+        print("Injecting link and src base path")
+        template = template.replace('href="/', f'href="{base_path}')
+        template = template.replace('src="/', f'src="{base_path}')
 
         dest_dir = os.path.dirname(dest_path)
         if not os.path.exists(dest_dir):
@@ -69,7 +73,7 @@ def generate_page(from_path, template_path, dest_path):
         raise e
 
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, base_path):
     if not os.path.exists(dest_dir_path):
         print(f"Creating directory: {dest_dir_path}")
         os.mkdir(dest_dir_path)
@@ -79,9 +83,16 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
         fp = os.path.join(dir_path_content, li)
         if os.path.isfile(fp) and fp.endswith(".md"):
             print(f"Found .md content file: {fp}")
-            generate_page(fp, template_path, os.path.join(dest_dir_path, li.replace(".md", ".html")))
+            generate_page(
+                fp,
+                template_path,
+                os.path.join(dest_dir_path, li.replace(".md", ".html")),
+                base_path,
+            )
         elif os.path.isdir(fp):
             print(f"Found directory: {fp}")
-            generate_pages_recursive(fp, template_path, os.path.join(dest_dir_path, li))
+            generate_pages_recursive(
+                fp, template_path, os.path.join(dest_dir_path, li), base_path
+            )
 
     print("done...\n")
